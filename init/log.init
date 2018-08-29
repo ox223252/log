@@ -1,0 +1,13 @@
+@ after END_CONFIG INIT_CORE
+	// INIT_LOG
+	#ifdef __CONFIG_DATA__
+	logSetDebug ( flag.debug );
+	logSetColor ( flag.color );
+	logSetQuiet ( flag.quiet );
+	#else
+	logSetDebug ( 1 );
+	logSetColor ( 1 );
+	logSetQuiet ( 0 );
+	#endif
+	// END_LOG
+	
