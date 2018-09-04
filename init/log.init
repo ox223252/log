@@ -1,9 +1,9 @@
 @ after END_CONFIG INIT_CORE
 	// INIT_LOG
-	#ifdef __CONFIG_DATA__
-	logSetDebug ( flag.debug );
-	logSetColor ( flag.color );
-	logSetQuiet ( flag.quiet );
+	#ifdef __CONFIG_DATA_H__
+	logSetDebug ( flags.debug );
+	logSetColor ( flags.color );
+	logSetQuiet ( flags.quiet );
 	#else
 	logSetDebug ( 1 );
 	logSetColor ( 1 );
