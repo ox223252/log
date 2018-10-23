@@ -4,10 +4,14 @@
 	logSetDebug ( flags.debug );
 	logSetColor ( flags.color );
 	logSetQuiet ( flags.quiet );
+	logSetOutput ( flags.term, flags.file );
+	logSetFileName ( logFileName );
 	#else
 	logSetDebug ( 1 );
 	logSetColor ( 1 );
 	logSetQuiet ( 0 );
+	logSetOutput ( 1, 1 );
+	logSetFileName ( "log.txt" );
 	#endif
 	// END_LOG
 	
