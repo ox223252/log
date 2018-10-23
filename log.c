@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <string.h>
+#include <errno.h>
 
 #include "log.h"
 
@@ -37,28 +39,104 @@
 #define BB "\e[1;34m"
 #define BG "\e[1;32m"
 #define BR "\e[1;31m"
+#define MAX_FILE_NAME_LENGTH 512
 
+///< logs not quiet
+///< debugs without colors
+///< logs without debugs
+///< logs displayed in terminal
+///< logs printed in files
 static struct
 {
 	uint8_t quiet:1,
 		color:1,
-		debug:1;
+		debug:1,
+		term:1,
+		file:1;
 }
-flag;
+_log_flag = { 0, 0, 0, 1, 0 };
+
+static char _log_fileName[ MAX_FILE_NAME_LENGTH ] = { 0 };
+
+static inline void printInFile ( const char * const restrict str, ... )
+{
+	va_list argptr;
+	FILE * f = NULL;
+
+	if ( ( !_log_flag.file ) ||
+		!strlen ( _log_fileName ) )
+	{
+		return;
+	}
+
+	f = fopen ( _log_fileName, "a" );
+	if ( !f )
+	{
+		return;
+	}
+
+	va_start ( argptr, str );
+	vfprintf ( f, str, argptr );
+	va_end ( argptr );
+
+	fclose ( f );
+}
+
+static inline void printInTerm ( const char * const restrict str, ... )
+{
+	va_list argptr;
+
+	if ( !_log_flag.term )
+	{
+		return;
+	}
+
+	va_start ( argptr, str );
+	vfprintf ( stdout, str, argptr );
+	va_end ( argptr );
+}
 
 void logSetQuiet ( const bool quiet )
 {
-	flag.quiet = quiet & 0x01;
+	_log_flag.quiet = quiet & 0x01;
 }
 
 void logSetColor ( const bool color )
 {
-	flag.color = color & 0x01;
+	_log_flag.color = color & 0x01;
 }
 
 void logSetDebug ( const bool debug )
 {
-	flag.debug = debug & 0x01;
+	_log_flag.debug = debug & 0x01;
+}
+
+void logSetOutput ( const bool term, const bool file )
+{
+	_log_flag.term = term & 0x01;
+	_log_flag.file = file & 0x01;
+}
+
+int logSetFileName ( const char * const fileName )
+{
+	FILE * f = NULL;
+
+	if ( strlen ( fileName  ) > ( MAX_FILE_NAME_LENGTH - 1 ) )
+	{
+		errno = E2BIG;
+		return ( __LINE__ );
+	}
+
+	strcpy ( _log_fileName, fileName );
+
+	f = fopen ( _log_fileName, "a" );
+	if ( !f )
+	{
+		return ( __LINE__ );
+	}
+	fclose ( f );
+
+	return ( 0 );
 }
 
 // permit to display func name line number and file name if debug option was activated
@@ -68,25 +146,27 @@ void logVerboseSr ( const char * restrict file, const char * restrict func,
 {
 	va_list argptr;
 
-	if ( flag.quiet )
+	if ( _log_flag.quiet )
 	{
 		return;
 	}
 
-	if ( flag.debug )
+	if ( _log_flag.debug )
 	{
-		if ( flag.color )
+		if ( _log_flag.color )
 		{
-			printf ( BY"%s"BG" %s"BB" %d"NONE" : ", file, func, line );
+			printInTerm ( BY"%s"BG" %s"BB" %d"NONE" : ", file, func, line );
 		}
 		else
 		{
-			printf ( "%s %s %d : ", file, func, line );
+			printInTerm ( "%s %s %d : ", file, func, line );
 		}
+		printInFile ( "%s %s %d : ", file, func, line );
 	}
 
 	va_start ( argptr, str );
-	vfprintf ( stdout, str, argptr );
+	printInTerm ( str, argptr );
+	printInFile ( str, argptr );
 	va_end ( argptr );
 }
 
@@ -95,19 +175,21 @@ void logDebugSr ( const char * restrict file, const char * restrict func,
 {
 	va_list argptr;
 
-	if ( !flag.quiet &&
-		flag.debug )
+	if ( !_log_flag.quiet &&
+		_log_flag.debug )
 	{
-		if ( flag.color )
+		if ( _log_flag.color )
 		{
-			printf ( BR"%s "BG"%s "BB"%d\e"NONE" : ", file, func, line );
+			printInTerm ( BR"%s "BG"%s "BB"%d\e"NONE" : ", file, func, line );
 		}
 		else
 		{
-			printf ( "%s %s %d : ", file, func, line );
+			printInTerm ( "%s %s %d : ", file, func, line );
+			printInFile ( "%s %s %d : ", file, func, line );
 		}
 		va_start ( argptr, str );
-		vfprintf ( stdout, str, argptr );
+		printInTerm ( str, argptr );
+		printInFile ( str, argptr );
 		va_end ( argptr );
 	}
 }
@@ -116,13 +198,14 @@ void logVerbose ( const char * restrict str, ... )
 {
 	va_list argptr;
 
-	if ( flag.quiet )
+	if ( _log_flag.quiet )
 	{
 		return;
 	}
 
 	va_start ( argptr, str );
-	vfprintf ( stdout, str, argptr );
+	printInTerm ( str, argptr );
+	printInFile ( str, argptr );
 	va_end ( argptr );
 }
 #endif

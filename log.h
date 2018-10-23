@@ -24,7 +24,7 @@
 /// \author ox223252
 /// \date 2017-07
 /// \copyright GPLv2
-/// \version 0.1
+/// \version 0.2
 /// \warning NONE
 /// \bug NONE
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,27 +69,42 @@ void logSetDebug ( const bool debug );
 /// \breif display file, function, line before str if debug set and display str 
 ///     if quiet not set
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef MODE_DEBUG
-void logVerboseSr ( const char * restrict file, const char * restrict func, 
-	const int line, const char * restrict str, ... );
-
-#define logVerbose(...) logVerboseSr(__FILE__,__func__,__LINE__,__VA_ARGS__)
-#else
 void logVerbose ( const char * restrict str, ... );
-#endif
 
-#ifdef MODE_DEBUG
-void logDebugSr ( const char * restrict file, const char * restrict func, 
-	const int line, const char * restrict str, ... );
-	
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void logDebug ( char * str, ... );
 /// \param[ in ] str: formated string see printf
 /// \param[ in ] ...: see printf
 /// \breif display file, function, line and str if quiet not set
 ////////////////////////////////////////////////////////////////////////////////
+void logVerbose ( const char * restrict str, ... );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn void logSetOutput ( const bool term, const bool file );
+/// \param[ in ] term: flag to set or not output on terminal
+/// \param[ in ] file: flag to set or not output on file
+/// \breif select out put for logs
+////////////////////////////////////////////////////////////////////////////////
+void logSetOutput ( const bool term, const bool file );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int logSetFileName ( const char * const fileName );
+/// \param[ in ] fileName: path of the output log file 
+/// \breif the the output file name
+/// \return it 0 ok else see ernno for more details
+////////////////////////////////////////////////////////////////////////////////
+int logSetFileName ( const char * const fileName );
+
+#ifdef MODE_DEBUG
+void logVerboseSr ( const char * restrict file, const char * restrict func, 
+	const int line, const char * restrict str, ... );
+#define logVerbose(...) logVerboseSr(__FILE__,__func__,__LINE__,__VA_ARGS__)
+
+void logDebugSr ( const char * restrict file, const char * restrict func, 
+	const int line, const char * restrict str, ... );
 #define logDebug(...) logDebugSr(__FILE__,__func__,__LINE__,__VA_ARGS__)
 #else
 #define logDebug(str,...)
 #endif
+
 #endif
