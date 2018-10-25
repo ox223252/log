@@ -58,6 +58,49 @@ _log_flag = { 0, 0, 0, 1, 0 };
 
 static char _log_fileName[ MAX_FILE_NAME_LENGTH ] = { 0 };
 
+static inline void vprintInTerm ( const char * const restrict str, va_list argptr )
+{
+	if ( _log_flag.term )
+	{
+		vprintf ( str, argptr );
+	}
+}
+
+static inline void printInTerm ( const char * const restrict str, ... )
+{
+	va_list argptr;
+
+	if ( !_log_flag.term )
+	{
+		return;
+	}
+
+	va_start ( argptr, str );
+	vprintf ( str, argptr );
+	va_end ( argptr );
+}
+
+static inline void vprintInFile ( const char * const restrict str, va_list argptr )
+{
+	FILE * f = NULL;
+
+	if ( ( !_log_flag.file ) ||
+		!strlen ( _log_fileName ) )
+	{
+		return;
+	}
+
+	f = fopen ( _log_fileName, "a" );
+	if ( !f )
+	{
+		return;
+	}
+
+	vfprintf ( f, str, argptr );
+
+	fclose ( f );
+}
+
 static inline void printInFile ( const char * const restrict str, ... )
 {
 	va_list argptr;
@@ -80,20 +123,6 @@ static inline void printInFile ( const char * const restrict str, ... )
 	va_end ( argptr );
 
 	fclose ( f );
-}
-
-static inline void printInTerm ( const char * const restrict str, ... )
-{
-	va_list argptr;
-
-	if ( !_log_flag.term )
-	{
-		return;
-	}
-
-	va_start ( argptr, str );
-	vfprintf ( stdout, str, argptr );
-	va_end ( argptr );
 }
 
 void logSetQuiet ( const bool quiet )
@@ -144,7 +173,7 @@ int logSetFileName ( const char * const fileName )
 void logVerboseSr ( const char * restrict file, const char * restrict func, 
 	const int line, const char * restrict str, ... )
 {
-	va_list argptr;
+	va_list ptr1, ptr2;
 
 	if ( _log_flag.quiet )
 	{
@@ -153,59 +182,52 @@ void logVerboseSr ( const char * restrict file, const char * restrict func,
 
 	if ( _log_flag.debug )
 	{
-		if ( _log_flag.color )
-		{
-			printInTerm ( BY"%s"BG" %s"BB" %d"NONE" : ", file, func, line );
-		}
-		else
-		{
-			printInTerm ( "%s %s %d : ", file, func, line );
-		}
+		printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
 		printInFile ( "%s %s %d : ", file, func, line );
 	}
 
-	va_start ( argptr, str );
-	printInTerm ( str, argptr );
-	printInFile ( str, argptr );
-	va_end ( argptr );
+	va_start ( ptr1, str );
+	va_copy ( ptr2, ptr1 );
+	vprintInTerm ( str, ptr1 );
+	vprintInFile ( str, ptr2 );
+	va_end ( ptr2 );
+	va_end ( ptr1 );
 }
 
 void logDebugSr ( const char * restrict file, const char * restrict func, 
 	const int line, const char * restrict str, ... )
 {
-	va_list argptr;
+	va_list ptr1, ptr2;
 
 	if ( !_log_flag.quiet &&
 		_log_flag.debug )
 	{
-		if ( _log_flag.color )
-		{
-			printInTerm ( BR"%s "BG"%s "BB"%d\e"NONE" : ", file, func, line );
-		}
-		else
-		{
-			printInTerm ( "%s %s %d : ", file, func, line );
-			printInFile ( "%s %s %d : ", file, func, line );
-		}
-		va_start ( argptr, str );
-		printInTerm ( str, argptr );
-		printInFile ( str, argptr );
-		va_end ( argptr );
+		printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
+		printInFile (  "%s %s %d : ", file, func, line );
+
+		va_start ( ptr1, str );
+		va_copy ( ptr2, ptr1 );
+		vprintInTerm ( str, ptr1 );
+		vprintInFile ( str, ptr2 );
+		va_end ( ptr2 );
+		va_end ( ptr1 );
 	}
 }
 #else
 void logVerbose ( const char * restrict str, ... )
 {
-	va_list argptr;
+	va_list ptr1, ptr2;
 
 	if ( _log_flag.quiet )
 	{
 		return;
 	}
 
-	va_start ( argptr, str );
-	printInTerm ( str, argptr );
-	printInFile ( str, argptr );
-	va_end ( argptr );
+	va_start ( ptr1, str );
+	va_copy ( ptr2, ptr1 );
+	vprintInTerm ( str, ptr1 );
+	vprintInFile ( str, ptr2 );
+	va_end ( ptr2 );
+	va_end ( ptr1 );
 }
 #endif
