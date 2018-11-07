@@ -77,7 +77,7 @@ void logVerbose ( const char * restrict str, ... );
 /// \param[ in ] ...: see printf
 /// \breif display file, function, line and str if quiet not set
 ////////////////////////////////////////////////////////////////////////////////
-void logVerbose ( const char * restrict str, ... );
+void logDebug ( const char * restrict str, ... );
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void logSetOutput ( const bool term, const bool file );
