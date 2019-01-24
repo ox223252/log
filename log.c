@@ -175,6 +175,10 @@ void logVerboseSr ( const char * restrict file, const char * restrict func,
 {
 	va_list ptr1, ptr2;
 
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		long unsigned int WcmdStatus;
+	#endif
+
 	if ( _log_flag.quiet )
 	{
 		return;
@@ -182,8 +186,17 @@ void logVerboseSr ( const char * restrict file, const char * restrict func,
 
 	if ( _log_flag.debug )
 	{
+		#if defined ( _WIN64 ) || defined ( _WIN32 )
+			GetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), &WcmdStatus );
+			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus | 0x0004 );
+		#endif
+		
 		printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
 		printInFile ( "%s %s %d : ", file, func, line );
+
+		#if defined ( _WIN64 ) || defined ( _WIN32 )
+			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus );
+		#endif
 	}
 
 	va_start ( ptr1, str );
@@ -199,11 +212,25 @@ void logDebugSr ( const char * restrict file, const char * restrict func,
 {
 	va_list ptr1, ptr2;
 
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		long unsigned int WcmdStatus;
+	#endif
+
 	if ( !_log_flag.quiet &&
 		_log_flag.debug )
 	{
+		#if defined ( _WIN64 ) || defined ( _WIN32 )
+			GetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), &WcmdStatus );
+			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus | 0x0004 );
+		#endif
+		
 		printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
 		printInFile (  "%s %s %d : ", file, func, line );
+
+
+		#if defined ( _WIN64 ) || defined ( _WIN32 )
+			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus );
+		#endif
 
 		va_start ( ptr1, str );
 		va_copy ( ptr2, ptr1 );
