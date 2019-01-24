@@ -41,6 +41,11 @@
 #define BR "\e[1;31m"
 #define MAX_FILE_NAME_LENGTH 512
 
+#if defined ( _WIN64 ) || defined ( _WIN32 )
+#include <conio.h>
+#include <windows.h>
+#endif
+
 ///< logs not quiet
 ///< debugs without colors
 ///< logs without debugs
