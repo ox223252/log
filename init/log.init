@@ -1,12 +1,14 @@
 @ after END_CONFIG INIT_CORE
 	// INIT_LOG
 	#ifdef __CONFIG_DATA_H__
+	logSetVernose ( flags.verbose );
 	logSetDebug ( flags.debug );
 	logSetColor ( flags.color );
 	logSetQuiet ( flags.quiet );
 	logSetOutput ( flags.term, flags.file );
 	logSetFileName ( logFileName );
 	#else
+	logSetVerbose ( 1 );
 	logSetDebug ( 1 );
 	logSetColor ( 1 );
 	logSetQuiet ( 0 );

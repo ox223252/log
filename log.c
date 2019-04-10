@@ -54,12 +54,13 @@
 static struct
 {
 	uint8_t quiet:1,
+		verbose:1,
 		color:1,
 		debug:1,
 		term:1,
 		file:1;
 }
-_log_flag = { 0, 0, 0, 1, 0 };
+_log_flag = { 0, 0, 0, 0, 1, 0 };
 
 static char _log_fileName[ MAX_FILE_NAME_LENGTH ] = { 0 };
 
@@ -135,6 +136,11 @@ void logSetQuiet ( const bool quiet )
 	_log_flag.quiet = quiet & 0x01;
 }
 
+void logSetVerbose ( const bool verbose )
+{
+	_log_flag.verbose = verbose & 0x01;
+}
+
 void logSetColor ( const bool color )
 {
 	_log_flag.color = color & 0x01;
@@ -175,6 +181,39 @@ int logSetFileName ( const char * const fileName )
 
 // permit to display func name line number and file name if debug option was activated
 #ifdef MODE_DEBUG
+void logPrintfSr ( const char * restrict file, const char * restrict func, 
+	const int line, const char * restrict str, ... )
+{
+	va_list ptr1, ptr2;
+
+	if ( _log_flag.quiet )
+	{
+		return;
+	}
+
+	if ( _log_flag.debug )
+	{
+		#if defined ( _WIN64 ) || defined ( _WIN32 )
+			GetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), &WcmdStatus );
+			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus | 0x0004 );
+		#endif
+		
+		printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
+		printInFile ( "%s %s %d : ", file, func, line );
+
+		#if defined ( _WIN64 ) || defined ( _WIN32 )
+			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus );
+		#endif
+	}
+
+	va_start ( ptr1, str );
+	va_copy ( ptr2, ptr1 );
+	vprintInTerm ( str, ptr1 );
+	vprintInFile ( str, ptr2 );
+	va_end ( ptr2 );
+	va_end ( ptr1 );
+}
+
 void logVerboseSr ( const char * restrict file, const char * restrict func, 
 	const int line, const char * restrict str, ... )
 {
@@ -184,7 +223,9 @@ void logVerboseSr ( const char * restrict file, const char * restrict func,
 		long unsigned int WcmdStatus;
 	#endif
 
-	if ( _log_flag.quiet )
+	if ( !_log_flag.verbose &&
+		!_log_flag.debug ||
+		_log_flag.quiet )
 	{
 		return;
 	}
@@ -221,32 +262,34 @@ void logDebugSr ( const char * restrict file, const char * restrict func,
 		long unsigned int WcmdStatus;
 	#endif
 
-	if ( !_log_flag.quiet &&
-		_log_flag.debug )
+	if ( !_log_flag.debug ||
+		_log_flag.quiet )
 	{
-		#if defined ( _WIN64 ) || defined ( _WIN32 )
-			GetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), &WcmdStatus );
-			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus | 0x0004 );
-		#endif
-		
-		printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
-		printInFile (  "%s %s %d : ", file, func, line );
-
-
-		#if defined ( _WIN64 ) || defined ( _WIN32 )
-			SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus );
-		#endif
-
-		va_start ( ptr1, str );
-		va_copy ( ptr2, ptr1 );
-		vprintInTerm ( str, ptr1 );
-		vprintInFile ( str, ptr2 );
-		va_end ( ptr2 );
-		va_end ( ptr1 );
+		return;
 	}
+
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		GetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), &WcmdStatus );
+		SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus | 0x0004 );
+	#endif
+	
+	printInTerm ( ( _log_flag.color ) ? BR"%s "BG"%s "BB"%d\e"NONE" : " : "%s %s %d : ", file, func, line );
+	printInFile (  "%s %s %d : ", file, func, line );
+
+
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus );
+	#endif
+
+	va_start ( ptr1, str );
+	va_copy ( ptr2, ptr1 );
+	vprintInTerm ( str, ptr1 );
+	vprintInFile ( str, ptr2 );
+	va_end ( ptr2 );
+	va_end ( ptr1 );
 }
 #else
-void logVerbose ( const char * restrict str, ... )
+void logPrintf ( const char * restrict str, ... )
 {
 	va_list ptr1, ptr2;
 
@@ -262,4 +305,23 @@ void logVerbose ( const char * restrict str, ... )
 	va_end ( ptr2 );
 	va_end ( ptr1 );
 }
+
+void logVerbose ( const char * restrict str, ... )
+{
+	va_list ptr1, ptr2;
+
+	if ( !_log_flag.verbose ||
+		_log_flag.quiet )
+	{
+		return;
+	}
+
+	va_start ( ptr1, str );
+	va_copy ( ptr2, ptr1 );
+	vprintInTerm ( str, ptr1 );
+	vprintInFile ( str, ptr2 );
+	va_end ( ptr2 );
+	va_end ( ptr1 );
+}
 #endif
+

@@ -31,11 +31,34 @@ This function enable *logDebug()* output, and add file name, function name and l
  - true to enable *logDebug()* outs and add file name, function name and line number display for *logVerbose()* in addition of printing args (*logVerbose()* == *logDebug()*)
 
 ### Display:
+#### logPrintf:
+```C
+void logPrintf ( const char * restrict str, ... );
+```
+This function will display args to *stdout*, use it like *printf()*, the display is conditionned by *logSetQuiet(), logSetColor() and logSetDebug()*.
+```C
+	logSetDebug ( true );
+	logSetColor ( true );
+	logPrintf ( "test1\n" );
+
+	logSetColor ( false );
+	logSetDebug ( false );
+	logPrintf ( "test2\n" );
+```
+```Shell
+# gcc main.c log.c -D'MODE_DEBUG' && ./a.out
+main.c main 7 : test1
+test2
+# gcc main.c log.c && ./a.out
+test1
+test2
+```
+
 #### logVerbose:
 ```C
 void logVerbose ( const char * restrict str, ... );
 ```
-This function will display args to *stdout*, use it like *printf()*, the display is conditionned by *logSetQuiet(), logSetColor() and logSetDebug()*.
+This function will display args to *stdout*, use it like *printf()*, the display is conditionned by *logSetQuiet(), logSetVerbose(), logSetColor() and logSetDebug()*.
 ```C
 	logSetDebug ( true );
 	logSetColor ( true );
@@ -44,11 +67,16 @@ This function will display args to *stdout*, use it like *printf()*, the display
 	logSetColor ( false );
 	logSetDebug ( false );
 	logVerbose ( "test2\n" );
+
+	logSetVerbose ( true );
+	logVerbose ( "test3\n" );
 ```
 ```Shell
-main.c main 17 : test1
-test2
+# gcc main.c log.c -D'MODE_DEBUG' && ./a.out
+main.c main 7 : test1
+test3
 ```
+
 #### logDebug:
 ```C
 void logDebug( const char * restrict str, ... );
@@ -62,61 +90,81 @@ This function will display file name, function name and line number followed by 
 
 int main ( void )
 {
-	printf ( "--> %d\n", __LINE__ );
+	printf ( "\n\ndisplay only 'printf'\n\n" );
+	logDebug ( "debug\n" );
+	logVerbose ( "verbose\n" );
+	logPrintf ( "printf\n" );
+
+	logSetVerbose ( true );
+	printf ( "\n\ndisplay printf & verbose\n\n" );
+	logDebug ( "debug\n" );
+	logVerbose ( "verbose\n" );
+	logPrintf ( "printf\n" );
 
 	logSetDebug ( true );
+	printf ( "\n\ndisplay all\n\n" );
+	logDebug ( "debug\n" );
+	logVerbose ( "verbose\n" );
+	logPrintf ( "printf\n" );
+
 	logSetColor ( true );
-
-	printf ( "--> %d\n", __LINE__ );
-	logVerbose ( "test\n" );
-	logDebug ( "test\n" );
-
-	logSetColor ( false );
-
-	printf ( "--> %d\n", __LINE__ );
-	logVerbose ( "a\n" );
-	logDebug ( "a\n" );
-
-	logSetDebug ( false );
-	
-	printf ( "--> %d\n", __LINE__ );
-	logVerbose ( "b\n" );
-	logDebug ( "b\n" );
+	printf ( "\n\ndisplay all with colors\n\n" );
+	logDebug ( "debug\n" );
+	logVerbose ( "verbose\n" );
+	logPrintf ( "printf\n" );
 
 	logSetQuiet ( true );
-	
-	printf ( "--> %d\n", __LINE__ );
-	logVerbose ( "c\n" );
-	logDebug ( "c\n" );
+	printf ( "\n\nnot display logs\n\n" );
+	logDebug ( "debug no displayed\n" );
+	logVerbose ( "verbose no displayed\n" );
+	logPrintf ( "printf no displayed\n" );
 
-	logSetDebug ( true );
-	
-	printf ( "--> %d\n", __LINE__ );
-	logVerbose ( "d\n" );
-	logDebug ( "d\n" );
-	
 	logSetQuiet ( false );
 
-	printf ( "--> %d\n", __LINE__ );
-	logVerbose ( "e\n" );
-	logDebug ( "e\n" );
+	printf ( "\n\ndisplay all\n\n" );
+	logDebug ( "debug\n" );
+	logVerbose ( "verbose\n" );
+	logPrintf ( "printf\n" );
 	return (0);
 }
+
 ```
+
 ```Shel
---> 5
---> 10
-main.c main 11 : test
-main.c main 12 : test
---> 16
-main.c main 17 : a
-main.c main 18 : a
---> 22
-b
---> 28
---> 34
---> 40
-main.c main 41 : e
-main.c main 42 : e
+# gcc main.c log.c -D'MODE_DEBUG' && ./a.out
+display only 'printf'
+
+printf
+
+
+display printf & verbose
+
+verbose
+printf
+
+
+display all
+
+main.c main 18 : debug
+main.c main 19 : verbose
+main.c main 20 : printf
+
+
+display all with colors
+
+main.c main 24 : debug
+main.c main 25 : verbose
+main.c main 26 : printf
+
+
+not display logs
+
+
+
+display all
+
+main.c main 37 : debug
+main.c main 38 : verbose
+main.c main 39 : printf
 ```
-> the color isn't displayed ^^
+> the colors aren't displayed ^^

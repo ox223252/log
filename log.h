@@ -24,7 +24,7 @@
 /// \author ox223252
 /// \date 2017-07
 /// \copyright GPLv2
-/// \version 0.2
+/// \version 1.0
 /// \warning NONE
 /// \bug NONE
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,13 +34,20 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void logQuiet ( const uint8_t quiet );
-/// \param[ in ] quiet: flag used to set clean general debug quiet falg
+/// \param[ in ] quiet: flag used to set clean general print quiet falg
 ///     value: 0/1 - true/false
-/// \breif enable/disable all next logverbose() function until a new 
-///     logSetQuiet() called to change settings
-/// \return 0: OK
+/// \breif enable/disable all next logPrintf(), logVerbose() and logDebug() 
+///     functions until a new logSetQuiet() called to change settings
 ////////////////////////////////////////////////////////////////////////////////
 void logSetQuiet ( const bool quiet );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn void logSetVerbose ( const uint8_t verbose );
+/// \param[ in ] verbose: flag used to set verbose falg
+///     value: 0/1 - true/false
+/// \breif enable/disable all next logverbose()
+////////////////////////////////////////////////////////////////////////////////
+void logSetVerbose ( const bool quiet );
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void logColor ( const uint8_t color );
@@ -48,7 +55,6 @@ void logSetQuiet ( const bool quiet );
 ///     value: 0/1 - true/false
 /// \breif enable/disable use of color in next logDebug function until a new
 ///     logSetColor called to change settings
-/// \return 0: OK
 ////////////////////////////////////////////////////////////////////////////////
 void logSetColor ( const bool color );
 
@@ -58,16 +64,24 @@ void logSetColor ( const bool color );
 ///     true/false
 /// \breif enable/disable use of debug in next logDebug function until a new
 ///     logSetDebug called to change settings
-/// \return 0: OK
 ////////////////////////////////////////////////////////////////////////////////
 void logSetDebug ( const bool debug );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn void logPrintf ( char * str, ... );
+/// \param[ in ] str: formated string see printf
+/// \param[ in ] ...: see printf
+/// \breif display file, function, line before str if debug set and display str 
+///     if quiet not set
+////////////////////////////////////////////////////////////////////////////////
+void logPrintf ( const char * restrict str, ... );
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void logVerbose ( char * str, ... );
 /// \param[ in ] str: formated string see printf
 /// \param[ in ] ...: see printf
 /// \breif display file, function, line before str if debug set and display str 
-///     if quiet not set
+///     if quiet not set and verbose flag is set
 ////////////////////////////////////////////////////////////////////////////////
 void logVerbose ( const char * restrict str, ... );
 
@@ -75,7 +89,8 @@ void logVerbose ( const char * restrict str, ... );
 /// \fn void logDebug ( char * str, ... );
 /// \param[ in ] str: formated string see printf
 /// \param[ in ] ...: see printf
-/// \breif display file, function, line and str if quiet not set
+/// \breif display file, function, line and str if quiet not set and debug flag
+///     is set
 ////////////////////////////////////////////////////////////////////////////////
 void logDebug ( const char * restrict str, ... );
 
@@ -96,6 +111,10 @@ void logSetOutput ( const bool term, const bool file );
 int logSetFileName ( const char * const fileName );
 
 #ifdef MODE_DEBUG
+void logPrintfSr ( const char * restrict file, const char * restrict func, 
+	const int line, const char * restrict str, ... );
+#define logPrintf(...) logPrintfSr(__FILE__,__func__,__LINE__,__VA_ARGS__)
+
 void logVerboseSr ( const char * restrict file, const char * restrict func, 
 	const int line, const char * restrict str, ... );
 #define logVerbose(...) logVerboseSr(__FILE__,__func__,__LINE__,__VA_ARGS__)
