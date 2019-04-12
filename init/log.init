@@ -1,7 +1,7 @@
 @ after END_CONFIG INIT_CORE
 	// INIT_LOG
 	#ifdef __CONFIG_DATA_H__
-	logSetVernose ( flags.verbose );
+	logSetVerbose ( flags.verbose );
 	logSetDebug ( flags.debug );
 	logSetColor ( flags.color );
 	logSetQuiet ( flags.quiet );
