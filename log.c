@@ -186,6 +186,10 @@ void logPrintfSr ( const char * restrict file, const char * restrict func,
 {
 	va_list ptr1, ptr2;
 
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		long unsigned int WcmdStatus;
+	#endif
+
 	if ( _log_flag.quiet )
 	{
 		return;
