@@ -7,7 +7,7 @@
 			logSetColor ( flags.color );
 		#endif
 		logSetQuiet ( flags.quiet );
-		logSetOutput ( flags.term, flags.file );
+		logSetOutput ( flags.term | !flags.file, flags.file );
 		logSetFileName ( logFileName );
 	#else
 		logSetVerbose ( 1 );
