@@ -1,19 +1,23 @@
 @ after END_CONFIG INIT_CORE
 	// INIT_LOG
 	#ifdef __CONFIG_DATA_H__
-	logSetVerbose ( flags.verbose );
-	logSetDebug ( flags.debug );
-	logSetColor ( flags.color );
-	logSetQuiet ( flags.quiet );
-	logSetOutput ( flags.term, flags.file );
-	logSetFileName ( logFileName );
+		logSetVerbose ( flags.verbose );
+		#ifndef RELEASE_MODE
+			logSetDebug ( flags.debug );
+			logSetColor ( flags.color );
+		#endif
+		logSetQuiet ( flags.quiet );
+		logSetOutput ( flags.term, flags.file );
+		logSetFileName ( logFileName );
 	#else
-	logSetVerbose ( 1 );
-	logSetDebug ( 1 );
-	logSetColor ( 1 );
-	logSetQuiet ( 0 );
-	logSetOutput ( 1, 1 );
-	logSetFileName ( "log.txt" );
+		logSetVerbose ( 1 );
+		#ifndef RELEASE_MODE
+			logSetDebug ( 1 );
+			logSetColor ( 1 );
+		#endif
+		logSetQuiet ( 0 );
+		logSetOutput ( 1, 1 );
+		logSetFileName ( "log.txt" );
 	#endif
 	// END_LOG
 	
