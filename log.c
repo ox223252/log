@@ -227,8 +227,8 @@ void logVerboseSr ( const char * restrict file, const char * restrict func,
 		long unsigned int WcmdStatus;
 	#endif
 
-	if ( !_log_flag.verbose &&
-		!_log_flag.debug ||
+	if ( ( !_log_flag.verbose &&
+		!_log_flag.debug ) ||
 		_log_flag.quiet )
 	{
 		return;
